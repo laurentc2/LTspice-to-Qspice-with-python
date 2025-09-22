@@ -12,11 +12,11 @@ My personnalconclusion : non is the best choice :
 
 ### usage :
 
-**python LT2Qspice.py my_schematic.asc**  : it will generate a **my_schematic.qsch** file.
+**python LT2Qspice.py my_schematic.asc**  : will generate  **my_schematic.qsch** file.
 
-**python sym_LT2Qspice.py my_symbol.asy**  : it will generate a **my_symbol.qsym** file.
+**python sym_LT2Qspice.py my_symbol.asy**  : will generate  **my_symbol.qsym** file.
 
-**python plt_LT2Qspice.py my_simulation.plt**  : it will generate a **my_simulation.pfg** file.
+**python plt_LT2Qspice.py my_simulation.plt**  :  will generate  **my_simulation.pfg** file.
 
 
 ### limitations :
