@@ -2,11 +2,12 @@
 
 Here are some python scripts for the lazy guys to transfer schematics, symbols and plot from LTspice to Qspice.
 
-I recommand to use the *'official'* method : import a spice netlist and redraw the schematic. It is the best to understand each component function in the circuit.
+I recommend to use the *'official'* method : import a spice netlist and redraw the schematic. It is the best to understand each component function in the circuit.
  
 The goal under that script is to try quickly Qspice and compare it to LTspice and NGspice.
-My personnalconclusion : non is the best choice :
-+ LTspice is very accurate espacially for oscillation and for the component of Analof Devices !
+
+My personal conclusion : none is the best choice :
++ LTspice is very accurate especially for oscillation and for the component of Analog Devices !
 + Qspice is very fast with a good accuracy
 + NGspice is slower but very versatile with its .control commands and osdi VA-models support
 
@@ -21,7 +22,7 @@ My personnalconclusion : non is the best choice :
 
 ### limitations :
 
-If a schematic include a symbol of Analog Devices, it will either no be in the schematic, or not be in the spice netlist.
+If a schematic includes a symbol of Analog Devices, it will either no be in the schematic, or not be in the spice netlist.
 At least, there will be a problem with its simulation.
 
 Many .sub file are not automatically included in the spice netlist.
@@ -30,6 +31,6 @@ Many .sub file are not automatically included in the spice netlist.
 
 I encourage you to fork it and improve it or simply suggest me some improvement.
 
-Unfortunatly, I may not have time to help you if it does work for you :worried:
+Unfortunately, I may not have time to help you if it does work for you :worried:
 
 :star: If you like it, star it ! :smiley:
