@@ -30,7 +30,7 @@ from pathlib import Path
 in_file = sys.argv[1]
 infl = open(in_file,"r", encoding='latin-1', errors='replace');
 # infl = open(in_file,"r", encoding='latin-1');
-if in_file[:3]!='asc' : print('\n'+in_file+' is not a .asc LTspice schematic\n')
+if in_file[-3:]!='asc' : print('\n'+in_file+' is not a .asc LTspice schematic\n')
 else :  out_file = in_file.replace(".asc" , ".qsch")
 outfl = open(out_file,"w",encoding='latin-1', errors='replace');
 
@@ -462,4 +462,5 @@ if flag_on :
 outfl.write(chr(0xBB)+chr(0x0A))
 
 infl.close()
+
 outfl.close()
