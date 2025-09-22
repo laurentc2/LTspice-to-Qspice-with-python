@@ -28,7 +28,7 @@ import os,sys,re
 in_file = sys.argv[1]
 # infl = open(in_file,"r", encoding='ISO-8859-1', errors='replace');
 infl = open(in_file,"r");
-if in_file[:3]!='plt' : print('\n'+in_file+' is not a .plt LTspice plot file\n')
+if in_file[-3:]!='plt' : print('\n'+in_file+' is not a .plt LTspice plot file\n')
 else :  out_file = in_file.replace('.plt' , '.pfg')
 outfl = open(out_file,'w',encoding='utf-16le');
 
@@ -80,4 +80,5 @@ for line1 in infl:
     line=''
 
 infl.close()
+
 outfl.close()
