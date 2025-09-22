@@ -30,7 +30,7 @@ from pathlib import Path
 in_file = sys.argv[1]
 infl = open(in_file,"r", encoding='latin-1', errors='replace');
 # infl = open(in_file,"r", encoding='latin-1');
-if in_file[:3]!='asy' : print('\n'+in_file+' is not a .asy LTspice symbol\n')
+if in_file[-3:]!='asy' : print('\n'+in_file+' is not a .asy LTspice symbol\n')
 else :  out_file = in_file.replace(".asy" , ".qsym")
 outfl = open(out_file,"w",encoding='latin-1', errors='replace');
 
@@ -181,4 +181,5 @@ for i in range(1,len(pin_line)+1) :
 outfl.write(chr(0xBB)+chr(0x0A))
 
 infl.close()
+
 outfl.close()
