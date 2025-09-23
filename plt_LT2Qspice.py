@@ -17,19 +17,25 @@
 #  MA 02110-1301, USA.
 
 #  Written by : Laurent CHARRIER
-#  last change: 2025, Sep 21.
+#  last change: 2025, Sep 23.
 #
-# usage example : python LT2Q.py Draft0.asc
-#       This example will create the file : Draft0.qsch
+# usage example : python plt_LT2Qspice.py Draft0.plt
+#       This example will create the file : Draft0.pfg
 #
 
 import os,sys,re
 
 in_file = sys.argv[1]
 # infl = open(in_file,"r", encoding='ISO-8859-1', errors='replace');
-infl = open(in_file,"r");
-if in_file[-3:]!='plt' : print('\n'+in_file+' is not a .plt LTspice plot file\n')
-else :  out_file = in_file.replace('.plt' , '.pfg')
+if (in_file[-3:])!='plt' : 
+  print('\n'+in_file+' is not a .plt plot file\n')
+  sys.exit(0)
+if os.path.exists(in_file) : 
+  infl = open(in_file,"r", encoding='latin-1', errors='replace');
+  out_file = in_file.replace(".plt" , ".pfg")
+else : 
+  print('\n'+in_file+' not found\n')
+  sys.exit(0)
 outfl = open(out_file,'w',encoding='utf-16le');
 
 def filter_line(line):
@@ -66,11 +72,11 @@ for line1 in infl:
   if re.match('^      X:',line1) :
     words=re.split(',', line1)
     line+='{"",0,0,'+words[2]+','+str((float(words[3])-float(words[3]))/10)+','+words[3]+',1,0,1,'+unit+'}'
-  if re.match('^      Y\[0\]',line1) :
+  if re.match(r'^      Y\[0\]',line1) :
     words=re.split(',', line1)
     if words[2]=='1e+308' : line=''
     else : line+='{"",'+words[2]+','+words[3]+','+words[4][:-1]+'1,1,0}}}'
-  if re.match('^      Y\[1\]:',line1) :
+  if re.match(r'^      Y\[1\]:',line1) :
     words=re.split(',', line1)
     if words[2]!='1e+308' :
       line=line[:-2]+',{"",'+words[2]+','+words[3]+','+words[4][:-1]+'1,1,0}}}'
@@ -80,5 +86,4 @@ for line1 in infl:
     line=''
 
 infl.close()
-
 outfl.close()
