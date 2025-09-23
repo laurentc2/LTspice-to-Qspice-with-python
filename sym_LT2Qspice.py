@@ -17,10 +17,10 @@
 #  MA 02110-1301, USA.
 
 #  Written by : Laurent CHARRIER
-#  last change: 2025, Sep 21.
+#  last change: 2025, Sep 23.
 #
-# usage example : python LT2Q.py Draft0.asc
-#       This example will create the file : Draft0.qsch
+# usage example : python sym_LT2Qspice.py Draft0.asy
+#       This example will create the file : Draft0.qsym
 #
 
 import os,sys,re
@@ -28,10 +28,15 @@ from os import path
 from pathlib import Path
 
 in_file = sys.argv[1]
-infl = open(in_file,"r", encoding='latin-1', errors='replace');
-# infl = open(in_file,"r", encoding='latin-1');
-if in_file[-3:]!='asy' : print('\n'+in_file+' is not a .asy LTspice symbol\n')
-else :  out_file = in_file.replace(".asy" , ".qsym")
+if (in_file[-3:])!='asy' : 
+  print('\n'+in_file+' is not a .asy symbol file\n')
+  sys.exit(0)
+if os.path.exists(in_file) : 
+  infl = open(in_file,"r", encoding='latin-1', errors='replace');
+  out_file = in_file.replace(".asy" , ".qsym")
+else : 
+  print('\n'+in_file+' not found\n')
+  sys.exit(0)
 outfl = open(out_file,"w",encoding='latin-1', errors='replace');
 
 # filter the lines of the schematic or of the symbol
@@ -78,11 +83,21 @@ val2_x=30
 val2_y=76
 val2_size='1'
 val2_ort='7'
-value3=''
+ttext=''
 valsp_x=30
 valsp_y=0
 valsp_ort='7'
 valsp_size='0.7'
+value3=''
+valsl_x=30
+valsl_y=0
+valsl_ort='7'
+valsl_size='0.7'
+value4=''
+valsl2_x=30
+valsl2_y=0
+valsl2_ort='7'
+valsl2_size='0.7'
 
 #--------------------------------------------------------------------
 # start to write the first lines of the .qsym file
@@ -95,7 +110,6 @@ for line1 in infl:
   words=re.split(' ', line1)
   # print(line1)
   if re.match('^SYMATTR Description ',line1) : line+='  '+chr(0xAB)+'description: '+line1[line1.find(words[2]):]+chr(0xBB)+chr(0x0A)
-  if re.match('^SYMATTR SpiceLine ',line1) : line+='  '+chr(0xAB)+'library file: '+line1[line1.find(words[2]):]+chr(0xBB)+chr(0x0A)
   if re.match('^SYMATTR ModelFile ',line1) : line+='  '+chr(0xAB)+'library file: '+line1[line1.find(words[2]):]+chr(0xBB)+chr(0x0A)
   if re.match('^LINE Normal ',line1) :
     line+='  '+chr(0xAB)+'line ('+str(int(mult*int(words[2])))+','+str(int(-mult*int(words[3])))+') ('+str(int(mult*int(words[4])))+','+str(int(-mult*int(words[5])))+') 0 0 0x00A000 -1 -1'+chr(0xBB)+chr(0x0A)
@@ -109,12 +123,16 @@ for line1 in infl:
     value=line1[line1.find(words[2]):]
   if re.match('^SYMATTR Value2 ',line1) :
     value2=line1[line1.find(words[2]):]
+  if re.match('^SYMATTR SpiceLine ',line1) :
+    value3=line1[line1.find(words[2]):]
+  if re.match('^SYMATTR SpiceLine2 ',line1) :
+    value4=line1[line1.find(words[2]):]
   if re.match('^SYMATTR SpiceModel ',line1) :
     sym_SpiceModel=line[line.find(words[2]):]
   if re.match('^TEXT ',line1) :
     if words[3][0]=='V' : txt_ort=str(val_orient[labelorient.index(words[3].upper())]+32)
     else : txt_ort=str(val_orient[labelorient.index(words[3].upper())])
-    value3+='  '+chr(0xAB)+'text ('+str(int(mult*int(words[1])))+','+str(int(-mult*int(words[2])))+') '+txtsize[int(words[4])]+' '+txt_ort+' 1 0x005000 -1 -1 "'+line1[line1.find(words[5]):]+'"'+chr(0xBB)+chr(0x0A)
+    ttext+='  '+chr(0xAB)+'text ('+str(int(mult*int(words[1])))+','+str(int(-mult*int(words[2])))+') '+txtsize[int(words[4])]+' '+txt_ort+' 1 0x005000 -1 -1 "'+line1[line1.find(words[5]):]+'"'+chr(0xBB)+chr(0x0A)
 
   # all pins are first stored in a list and the spiceOrder in a another list but with the same index
   # the goal is to allows to restore in Qspice the pins in the spice order
@@ -155,6 +173,18 @@ for line1 in infl:
     valsp_y=-int(words[3])
     valsp_ort=str(val_orient[labelorient.index(words[4].upper())])
     valsp_size=txtsize[int(words[5])]
+  # for the SpiceLine
+  if re.match('^WINDOW 39 ',line1):
+    valsl_x=int(words[2])
+    valsl_y=-int(words[3])
+    valsl_ort=str(val_orient[labelorient.index(words[4].upper())])
+    valsl_size=txtsize[int(words[5])]
+  # for the SpiceLine2
+  if re.match('^WINDOW 40 ',line1):
+    valsl2_x=int(words[2])
+    valsl2_y=-int(words[3])
+    valsl2_ort=str(val_orient[labelorient.index(words[4].upper())])
+    valsl2_size=txtsize[int(words[5])]
     
   # finally write the line to the .qsym file
   outfl.write(line)
@@ -169,7 +199,11 @@ if value!='' :
 if value2!='' :
   outfl.write('  '+chr(0xAB)+'text ('+str(int(mult*val2_x))+','+str(int(mult*val2_y))+') '+val2_size+' '+val2_ort+' 0 0x1000000 -1 -1 "'+value2+'"'+chr(0xBB)+chr(0x0A))
 if value3!='' :
-  outfl.write(value3)
+  outfl.write('  '+chr(0xAB)+'text ('+str(int(mult*valsl_x))+','+str(int(mult*valsl_y))+') '+valsl_size+' '+valsl_ort+' 0 0x1000000 -1 -1 "'+value3+'"'+chr(0xBB)+chr(0x0A))
+if value4!='' :
+  outfl.write('  '+chr(0xAB)+'text ('+str(int(mult*valsl2_x))+','+str(int(mult*valsl2_y))+') '+valsl2_size+' '+valsl2_ort+' 0 0x1000000 -1 -1 "'+value4+'"'+chr(0xBB)+chr(0x0A))
+if ttext!='' :
+  outfl.write(ttext)
 
 ## finally write all the pins the order of the SPICE pin order
 for i in range(1,len(pin_line)+1) :
@@ -181,5 +215,4 @@ for i in range(1,len(pin_line)+1) :
 outfl.write(chr(0xBB)+chr(0x0A))
 
 infl.close()
-
 outfl.close()
