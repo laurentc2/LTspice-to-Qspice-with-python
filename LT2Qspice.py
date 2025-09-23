@@ -17,9 +17,9 @@
 #  MA 02110-1301, USA.
 
 #  Written by : Laurent CHARRIER
-#  last change: 2025, Sep 21.
+#  last change: 2025, Sep 23.
 #
-# usage example : python LT2Q.py Draft0.asc
+# usage example : python LT2Qspice.py Draft0.asc
 #       This example will create the file : Draft0.qsch
 #
 
@@ -28,11 +28,18 @@ from os import path
 from pathlib import Path
 
 in_file = sys.argv[1]
-infl = open(in_file,"r", encoding='latin-1', errors='replace');
-# infl = open(in_file,"r", encoding='latin-1');
-if in_file[-3:]!='asc' : print('\n'+in_file+' is not a .asc LTspice schematic\n')
-else :  out_file = in_file.replace(".asc" , ".qsch")
+if (in_file[-3:])!='asc' : 
+  print('\n'+in_file+' is not a .asc schematic file\n')
+  sys.exit(0)
+if os.path.exists(in_file) : 
+  infl = open(in_file,"r", encoding='latin-1', errors='replace');
+  # infl = open(in_file,"r");
+  out_file = in_file.replace(".asc" , ".qsch")
+else : 
+  print('\n'+in_file+' not found\n')
+  sys.exit(0)
 outfl = open(out_file,"w",encoding='latin-1', errors='replace');
+# outfl = open(out_file,"w");
 
 
 # filter the lines of the schematic or of the symbol
@@ -180,7 +187,7 @@ for line1 in infl:
 # if symb_on, we finish to write the data of the symbol lines in a better order
   if symb_on and not re.match('^SYMATTR',line1) and not re.match('^WINDOW',line1):
     if prefix=='X' and sym_SpiceModel=='' : sym_SpiceModel=sym_name.upper()
-    if sym_SpiceModel in value3.upper() : sm_dis=' -2'
+    if sym_SpiceModel in value5.upper() : sm_dis=' -2'
     else : sm_dis=' 0'
     if sym_SpiceModel!='' :
       outfl.write('      '+chr(0xAB)+'text ('+str(int(xsc+xm*valsp_x))+','+str(int(ysc+ym*valsp_y))+') '+valsp_size+' '+valsp_ort+sm_dis+' 0x1000000 -1 -1 "'+sym_SpiceModel+'"'+chr(0xBB)+chr(0x0A))
@@ -190,6 +197,10 @@ for line1 in infl:
       outfl.write(value2)
     if value3!='' :
       outfl.write(value3)
+    if value4!='' :
+      outfl.write(value4)
+    if value5!='' :
+      outfl.write(value5)
     ## finally write all the pins the order of the SPICE pins order
     for i in range(1,len(pin_line)+1) :
       for j in range(0,len(pin_line)) :
@@ -224,12 +235,22 @@ for line1 in infl:
     valsp_y=0
     valsp_ort='7'
     valsp_size='0.7'
+    valsl_x=30
+    valsl_y=0
+    valsl_ort='7'
+    valsl_size='0.7'
+    valsl2_x=30
+    valsl2_y=0
+    valsl2_ort='7'
+    valsl2_size='0.7'
     pin_spicenumber=[]
     pin_line=[]
     sym_SpiceModel=''
     value=''
     value2=''
     value3=''
+    value4=''
+    value5=''
     
     # search the file of the symbol = comp_file
     comp_file=next((s for s in comp_LTspice if '\\'+words[1]+'.asy' in s), None)
@@ -297,6 +318,10 @@ for line1 in infl:
           else : value='      '+chr(0xAB)+'text ('+str(int(xsc+xm*val_x))+','+str(int(ysc+ym*val_y))+') '+val_size+' '+val_ort+' 0 0x1000000 -1 -1 "'+linecomp[linecomp.find(words_comp[2]):]+'"'+chr(0xBB)+chr(0x0A)
         if re.match('^SYMATTR Value2 ',linecomp) :
           value2='      '+chr(0xAB)+'text ('+str(int(xsc+xm*val2_x))+','+str(int(ysc+ym*val2_y))+') '+val2_size+' '+val2_ort+' 0 0x1000000 -1 -1 "'+linecomp[linecomp.find(words_comp[2]):]+'"'+chr(0xBB)+chr(0x0A)
+        if re.match('^SYMATTR SpiceLine ',linecomp) :
+          value3='      '+chr(0xAB)+'text ('+str(int(xsc+xm*valsl_x))+','+str(int(ysc+ym*valsl_y))+') '+valsl_size+' '+valsl_ort+' 0 0x1000000 -1 -1 "'+linecomp[linecomp.find(words_comp[2]):]+'"'+chr(0xBB)+chr(0x0A)
+        if re.match('^SYMATTR SpiceLine2 ',linecomp) :
+          value4='      '+chr(0xAB)+'text ('+str(int(xsc+xm*valsl2_x))+','+str(int(ysc+ym*valsl2_y))+') '+valsl2_size+' '+valsl2_ort+' 0 0x1000000 -1 -1 "'+linecomp[linecomp.find(words_comp[2]):]+'"'+chr(0xBB)+chr(0x0A)
         if re.match('^SYMATTR SpiceModel ',linecomp) :
           sym_SpiceModel=linecomp[linecomp.find(words_comp[2]):]
         if re.match('^TEXT ',linecomp) :
@@ -309,7 +334,7 @@ for line1 in infl:
           else : 
             txtort=str(val_orient[labelorient.index(words_comp[3].upper())]^pin_orientshift[comporient])
             vshft=1
-          value3+='      '+chr(0xAB)+'text ('+str(int(xsc+xm*int(words_comp[1])))+','+str(int(ysc+ym*int(words_comp[2])))+') '+txtsize[int(words_comp[4])]+' '+txtort+' 1 0x005000 -1 -1 "'+linecomp[linecomp.find(words_comp[5]):]+'"'+chr(0xBB)+chr(0x0A)
+          value5+='      '+chr(0xAB)+'text ('+str(int(xsc+xm*int(words_comp[1])))+','+str(int(ysc+ym*int(words_comp[2])))+') '+txtsize[int(words_comp[4])]+' '+txtort+' 1 0x005000 -1 -1 "'+linecomp[linecomp.find(words_comp[5]):]+'"'+chr(0xBB)+chr(0x0A)
         if re.match('^PIN ',linecomp) :
           x_pin=int(words_comp[1])
           y_pin=int(words_comp[2])
@@ -350,6 +375,16 @@ for line1 in infl:
           valsp_y=int(words_comp[3])
           valsp_ort=str(val_orient[labelorient.index(words_comp[4].upper())])
           valsp_size=txtsize[max(0,int(words_comp[5])-1)]
+        if re.match('^WINDOW 39 ',linecomp):
+          valsl_x=int(words_comp[2])
+          valsl_y=int(words_comp[3])
+          valsl_ort=str(val_orient[labelorient.index(words_comp[4].upper())])
+          valsl_size=txtsize[max(0,int(words_comp[5])-1)]
+        if re.match('^WINDOW 40 ',linecomp):
+          valsl2_x=int(words_comp[2])
+          valsl2_y=int(words_comp[3])
+          valsl2_ort=str(val_orient[labelorient.index(words_comp[4].upper())])
+          valsl2_size=txtsize[max(0,int(words_comp[5])-1)]
 
 # if a symbol is started some location and orientation and text size may be adjusted in the schematic
   # for the instance name
@@ -384,6 +419,28 @@ for line1 in infl:
     val2_size=txtsize[int(words[5])-1]
   if symb_on and (re.match('^SYMATTR Value2 ',line1)):
     value2='      '+chr(0xAB)+'text ('+str(int(xsc+xm*val2_x))+','+str(int(ysc+ym*val2_y))+') '+val2_size+' '+val2_ort+' 0 0x1000000 -1 -1 "'+line1[line1.find(words[2]):]+'"'+chr(0xBB)+chr(0x0A)
+
+  # for the SpiceLine
+  if symb_on and (re.match('^WINDOW 39 ',line1)):
+    valsl_x=int(words[2])
+    valsl_y=int(words[3])
+    if (words[4][0]=='V' and comporient!=1 and comporient!=3 and comporient!=5 and comporient!=7) or (words[4][0]!='V' and comporient!=0 and comporient!=2 and comporient!=4 and comporient!=6) :
+      valsl_ort=str(val_orient[labelorient.index(words[4].upper())]^vval_orientshift[comporient])
+    else : valsl_ort=str(val_orient[labelorient.index(words[4].upper())]^val_orientshift[comporient])
+    valsl_size=txtsize[int(words[5])-1]
+  if symb_on and (re.match('^SYMATTR SpiceLine ',line1)):
+    value3='      '+chr(0xAB)+'text ('+str(int(xsc+xm*valsl_x))+','+str(int(ysc+ym*valsl_y))+') '+valsl_size+' '+valsl_ort+' 0 0x1000000 -1 -1 "'+line1[line1.find(words[2]):]+'"'+chr(0xBB)+chr(0x0A)
+
+  # for the SpiceLine2
+  if symb_on and (re.match('^WINDOW 40 ',line1)):
+    valsl2_x=int(words[2])
+    valsl2_y=int(words[3])
+    if (words[4][0]=='V' and comporient!=1 and comporient!=3 and comporient!=5 and comporient!=7) or (words[4][0]!='V' and comporient!=0 and comporient!=2 and comporient!=4 and comporient!=6) :
+      valsl2_ort=str(val_orient[labelorient.index(words[4].upper())]^vval_orientshift[comporient])
+    else : valsl3_ort=str(val_orient[labelorient.index(words[4].upper())]^val_orientshift[comporient])
+    valsl2_size=txtsize[int(words[5])-1]
+  if symb_on and (re.match('^SYMATTR SpiceLine2 ',line1)):
+    value4='      '+chr(0xAB)+'text ('+str(int(xsc+xm*valsl2_x))+','+str(int(ysc+ym*valsl2_y))+') '+valsl2_size+' '+valsl2_ort+' 0 0x1000000 -1 -1 "'+line1[line1.find(words[2]):]+'"'+chr(0xBB)+chr(0x0A)
 
  # for the SpiceModel
   if symb_on and re.match('^SYMATTR SpiceModel ',line1) :
@@ -435,7 +492,7 @@ for line1 in infl:
 # we finish to write the symbol
 if symb_on :
   if prefix=='X' and sym_SpiceModel=='' : sym_SpiceModel=sym_name.upper()
-  if sym_SpiceModel in value3.upper() : sm_dis=' -2'
+  if sym_SpiceModel in value5.upper() : sm_dis=' -2'
   else : sm_dis=' 0'
   if sym_SpiceModel!='' :
     outfl.write('      '+chr(0xAB)+'text ('+str(int(xsc+xm*valsp_x))+','+str(int(ysc+ym*valsp_y))+') '+valsp_size+' '+valsp_ort+sm_dis+' 0x1000000 -1 -1 "'+sym_SpiceModel+'"'+chr(0xBB)+chr(0x0A))
@@ -445,6 +502,10 @@ if symb_on :
     outfl.write(value2)
   if value3!='' :
     outfl.write(value3)
+  if value4!='' :
+    outfl.write(value4)
+  if value5!='' :
+    outfl.write(value5)
   ## finally write all the pins the order of the SPICE pin order
   for i in range(1,len(pin_line)+1) :
     for j in range(0,len(pin_line)) :
@@ -462,5 +523,4 @@ if flag_on :
 outfl.write(chr(0xBB)+chr(0x0A))
 
 infl.close()
-
 outfl.close()
